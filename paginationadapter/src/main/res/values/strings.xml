@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Pagination Adapter</string>
+
+    <string name="default_error_explanation">An error occurred while loading</string>
+    <string name="button_retry">Retry</string>
+</resources>
