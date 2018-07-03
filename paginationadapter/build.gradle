@@ -1,9 +1,31 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
+ext {
+    bintrayRepo = 'PaginationAdapter'
+    bintrayName = 'com.ilichev.vladimir.paginationadapter'
+
+    libraryName = 'paginationadapter'
+
+    // Usage example: implementation "com.ilichev.vladimir.paginationadapter:adapter:1.0.0"
+    publishedGroupId = 'com.ilichev.vladimir.paginationadapter'
+    artifact = 'adapter'
+    libraryVersion = '1.0.0'
+
+    libraryDescription = 'RecyclerView adapter that allows display data with small portions'
+    siteUrl = 'https://github.com/vlilichev/PaginationAdapter'
+    gitUrl = 'https://github.com/vlilichev/PaginationAdapter.git'
+    developerId = 'vlilichev'
+    developerName = 'Vladimir Ilichev'
+    developerEmail = 'vlilichev96@gmail.com'
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
 
 android {
     compileSdkVersion 27
-
-
 
     defaultConfig {
         minSdkVersion 21
@@ -38,4 +60,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+
+if (project.rootProject.file('local.properties').exists()) {
+    apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+    apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
 }
