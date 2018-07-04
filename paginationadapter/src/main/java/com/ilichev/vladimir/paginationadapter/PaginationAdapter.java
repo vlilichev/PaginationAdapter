@@ -30,7 +30,7 @@ public abstract class PaginationAdapter<E> extends RecyclerView.Adapter<Recycler
     private int distance;
     private int currentPage;
 
-    private PageState currentSate = PageState.LOADING;
+    private PageState currentSate = PageState.LOADED;
 
     private LoadNextPartCallback loadNextPartCallback;
     private LoadNextPageCallback loadNextPageCallback;
@@ -162,6 +162,26 @@ public abstract class PaginationAdapter<E> extends RecyclerView.Adapter<Recycler
     }
 
     /**
+     * Inserts new item to specified position.
+     * Insertion will drop the last list item, it means that dropped item should be first
+     * in new requested page.
+     * @param item Item to insert.
+     * @param position Item position in paged list.
+     * @throws IllegalArgumentException If (position < 0) or (position > data size)
+     */
+    public void insert(@NonNull E item, int position) {
+        if (position < 0 || position > data.size()) {
+            throw new IllegalArgumentException("Position must be from 0 to list size");
+        }
+
+        data.add(position, item);
+        notifyItemInserted(position);
+
+        data.remove(data.size() - 1);
+        notifyItemRemoved(data.size());
+    }
+
+    /**
      * Sets a error to adapter.
      * It will show error footer with error message. See {@link #createStateErrorViewHolder(ViewGroup)} to customize error message.
      * To leave error state client should call {@link #retry()}.
@@ -179,6 +199,69 @@ public abstract class PaginationAdapter<E> extends RecyclerView.Adapter<Recycler
         if (currentSate == PageState.ERROR) {
             loadMore();
         }
+    }
+
+    /**
+     * Removes item from paged list by position.
+     * After item removing the last page of paged will be deleted and
+     * adapter will request last page ones again.
+     * @param position Position of item to remove.
+     */
+    public void remove(int position) {
+        if (data.isEmpty()) {
+            return;
+        }
+        if (position < 0 || position > data.size()) {
+            throw new IllegalArgumentException("Position must be from 0 to list size");
+        }
+
+        data.remove(position);
+        notifyItemRemoved(position);
+
+        int removeFrom = data.size() - pageSize + 1;
+        for (int i = data.size() - 1, j = 0; j < pageSize - 1; i--, j++) {
+            data.remove(i);
+        }
+        notifyItemRangeRemoved(removeFrom, pageSize);
+
+        decrementPage();
+        loadMore();
+    }
+
+    /**
+     * Removes item from paged list
+     * After item removing the last page of paged will be deleted and
+     * adapter will request last page ones again.
+     * @param item Item to remove.
+     */
+    public void remove(@NonNull E item) {
+        int indx = data.indexOf(item);
+        if (data.isEmpty() || indx == -1) {
+            return;
+        }
+        remove(indx);
+    }
+
+    /**
+     * Resets adapter to its initial state and clears all data.
+     * No matter what previous state was, adapter will wait for first page.
+     * The next page that will be set through {@link #setData(List)} will be first page.
+     */
+    public void reset() {
+        PageState prev = currentSate;
+        currentSate = PageState.LOADED;
+
+        int size = data.size();
+        if (prev == PageState.LOADING || prev == PageState.ERROR) {
+            // Remove footer
+            notifyItemRemoved(size);
+        }
+
+        data.clear();
+        notifyItemRangeRemoved(0, size);
+
+        distance = 0 - pageSize;
+        currentPage = distance / pageSize + 1;
     }
 
     /**
@@ -227,6 +310,11 @@ public abstract class PaginationAdapter<E> extends RecyclerView.Adapter<Recycler
         calculateCurrentPage();
     }
 
+    private void decrementPage() {
+        distance -= pageSize;
+        calculateCurrentPage();
+    }
+
     private void calculateCurrentPage() {
         currentPage = distance / pageSize + 1;
     }
@@ -263,7 +351,8 @@ public abstract class PaginationAdapter<E> extends RecyclerView.Adapter<Recycler
 
             if (currentSate == PageState.REACHED_LIMIT
                     || currentSate == PageState.LOADING
-                    || currentSate == PageState.ERROR) {
+                    || currentSate == PageState.ERROR
+                    || dy == 0) {
                 return;
             }
 
