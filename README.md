@@ -8,13 +8,13 @@ RecyclerView adapter that allows display data with small portions
 ### Setup
 
 Available on jCenter:
-```
+```groovy
 implementation 'com.ilichev.vladimir.paginationadapter:adapter:1.0.1'
 ```
 ### Usage
 
 Create your adapter, extend it from ```PaginationAdapter``` and implement ```createItemViewHolder()```:
-```
+```java
 public class BooksPagedAdapter extends PaginationAdapter<Book> {
 
     private Context uiContext;
@@ -32,7 +32,7 @@ public class BooksPagedAdapter extends PaginationAdapter<Book> {
 }
 ```
 Next step is creating ```ViewHolder``` that render single list item:
-```
+```java
 public class BookViewHolder extends ItemHolder<Book> {
 
     private TextView title;
@@ -53,13 +53,13 @@ public class BookViewHolder extends ItemHolder<Book> {
 }
 ```
 And setup adapter to ```RecyclerView```:
-```
+```java
 PaginationAdapter<Book> adapter = new BooksPagedAdapter(new ArrayList<>(), pagingConfig, this);
 adapter.setLoadNextPartCallback((offset, count) -> booksRepository.load(offset, count));
 rv.setAdapter(adapter);
 ```
 For more control over the pagination behavior ```PagingConfig``` can be used:
-```
+```java
 PagingConfig pagingConfig = new PagingConfig.Builder()
                 .setPageSize(20)
                 .setLoadThreshold(2)
@@ -67,7 +67,7 @@ PagingConfig pagingConfig = new PagingConfig.Builder()
                 .build();
 ```
 To customize progress and error footer override methods below and provide ```ViewHolder``` for progress and error state:
-```
+```java
 @Override
 protected StateHolder createStateProgressViewHolder(@NonNull ViewGroup parent) {
     // TODO: Provide progress ViewHolder
