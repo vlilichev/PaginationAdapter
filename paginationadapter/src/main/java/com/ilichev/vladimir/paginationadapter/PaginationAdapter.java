@@ -177,6 +177,10 @@ public abstract class PaginationAdapter<E> extends RecyclerView.Adapter<Recycler
         data.add(position, item);
         notifyItemInserted(position);
 
+        if (currentSate == PageState.REACHED_LIMIT) {
+            return;
+        }
+
         data.remove(data.size() - 1);
         notifyItemRemoved(data.size());
     }
@@ -218,11 +222,15 @@ public abstract class PaginationAdapter<E> extends RecyclerView.Adapter<Recycler
         data.remove(position);
         notifyItemRemoved(position);
 
+        if (currentSate == PageState.REACHED_LIMIT) {
+            return;
+        }
+
         int removeFrom = data.size() - pageSize + 1;
         for (int i = data.size() - 1, j = 0; j < pageSize - 1; i--, j++) {
             data.remove(i);
         }
-        notifyItemRangeRemoved(removeFrom, pageSize);
+        notifyItemRangeRemoved(removeFrom, pageSize - 1);
 
         decrementPage();
         loadMore();
@@ -262,6 +270,20 @@ public abstract class PaginationAdapter<E> extends RecyclerView.Adapter<Recycler
 
         distance = 0 - pageSize;
         currentPage = distance / pageSize + 1;
+    }
+
+    /**
+     * Updates item on given position.
+     * @param item New item.
+     * @param position Item position to update.
+     */
+    public void update(E item, int position) {
+        if (position < 0 || position > data.size()) {
+            throw new IllegalArgumentException("Position must be from 0 to list size");
+        }
+
+        data.set(position, item);
+        notifyItemChanged(position);
     }
 
     /**
